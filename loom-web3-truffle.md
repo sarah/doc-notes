@@ -15,17 +15,38 @@ v8.11.3
 ```
 
 ## Issues I ran into: 
-The scripts in the tutorial in #1 didn't work as written, so I ended up putting together a messy node script made up of a combination of:
+The scripts in the tutorial in #1 didn't work as written, so I ended up putting together a messy node script made up of a combination of code from:
 * [the web3 tutorial scripts](https://loomx.io/developers/docs/en/web3js-loom-provider-truffle.html); 
 * the [NodeJS and Browser Quickstart Guide Script](https://loomx.io/developers/docs/en/loom-js-quickstart.html)
 * the [source code for loom-truffle-provider](https://github.com/loomnetwork/loom-truffle-provider/blob/master/src/index.ts). 
 
 ## Errors I found while following the tutorials
 ### LoomProvider
-For example, initializing `LoomProvider` as detailed in the tutorial gave threw an `LoomProvider is not a constructor` error when I used it.  However, When I instead included `LoomProvider` explicitly via the `loom-js` require, the code initializing it, that was provided in the tutorial (`const web3 = new Web3(new LoomProvider(client, privateKey))`) worked.   
+For example, initializing `LoomProvider` as detailed in the tutorial: 
+```
+const loomProvider = loomTruffleProvider.getProviderEngine()
+```
+threw a `LoomProvider is not a constructor` error when I used it.  
+
+However, When I instead included `LoomProvider` explicitly via the `loom-js` require, e.g.
+```
+const {
+  NonceTxMiddleware, SignedTxMiddleware, Client,
+  Contract, Address, LocalAddress, CryptoUtils, LoomProvider
+} = require('loom-js')
+```
+
+Then, the code initializing it, that was provided in the tutorial, e.g.:
+
+```const web3 = new Web3(new LoomProvider(client, privateKey))```
+
+worked correctly.   
 
 ### Private Key generation
-I also had trouble with the generating a public key when I used the privateKey as generated via the loom tutorial: `privateKey = readFileSync('./private_key', 'utf-8')`. I got the following error: 
+I also had trouble with the generating a public key when I used the privateKey as generated via the loom tutorial: 
+```privateKey = readFileSync('./private_key', 'utf-8')```. 
+I got the following error: 
+
 ```
 /Users/sarah/Code/loom-test-simple-store/node_modules/tweetnacl/nacl-fast.js:2151
       throw new TypeError('unexpected type, use Uint8Array');
@@ -43,9 +64,10 @@ TypeError: unexpected type, use Uint8Array
     at Function.Module._load (module.js:497:3)
     at Function.Module.runMain (module.js:693:10)
 ```
+So instead, I generated a new private key, as you can see in my script below.
 
 ## Working Script
-In short, a very hacked-together proof that I can interact with a smart contract (written in solidity) on a locally running loom blockchain.  I'd prefer to do this in web3 but node was quicker b/c those were my examples.  This code will not win any beauty awards but here is my index.js file
+In short, here is a hacked-together proof that I can interact with a smart contract (written in solidity) that I have deplyoyed on a locally running loom blockchain.  I'd prefer to do this in web3 but node was quicker b/c those were my examples.  This code will not win any beauty awards but here is my index.js file. To run it, I ran ```node index.js```
 ```
 const { readFileSync } = require('fs')
 const {
